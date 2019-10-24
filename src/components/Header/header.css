@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css?family=Russo+One&display=swap');
+
+.header-base {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    height: 60px;
+    width: 100%;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+}
+
+.locator {
+    padding: 10px;
+    font-family: 'Russo One', sans-serif;
+    font-size: 2em;
+}
+
+.menu-item {
+    padding: 10px;
+    height: 40px;
+    width: 100%;
+    background-color: white;
+    color: red;
+
+}
+.menu-item:hover {
+    background-color: red;
+    color: white;
+}
+
+.user-control {
+    display: flex;
+    overflow: visible;
+    padding: 10px;
+}
+
+.user-face {
+    border-radius: 20px;
+    height: 40px;
+    width: 40px;
+    background-color: lightcoral;
+}
+
+.user-menu {
+    overflow: hidden;
+    height: 40px;
+}
+.user-menu:hover {
+    /* height: auto; */
+    overflow: visible;
+}

@@ -1,0 +1,11 @@
+.scrawl-item {
+    position: absolute;
+}
+
+.scrawl-text-new {
+    width: 200px;
+}
+
+.scrawl-submit-btn {
+    background-color: blue;
+}
