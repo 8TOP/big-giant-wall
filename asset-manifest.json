@@ -1,0 +1,21 @@
+{
+  "files": {
+    "main.css": "/big-giant-wall/static/css/main.297270fe.chunk.css",
+    "main.js": "/big-giant-wall/static/js/main.739f2f94.chunk.js",
+    "main.js.map": "/big-giant-wall/static/js/main.739f2f94.chunk.js.map",
+    "runtime-main.js": "/big-giant-wall/static/js/runtime-main.7e6cce03.js",
+    "runtime-main.js.map": "/big-giant-wall/static/js/runtime-main.7e6cce03.js.map",
+    "static/js/2.12e73053.chunk.js": "/big-giant-wall/static/js/2.12e73053.chunk.js",
+    "static/js/2.12e73053.chunk.js.map": "/big-giant-wall/static/js/2.12e73053.chunk.js.map",
+    "index.html": "/big-giant-wall/index.html",
+    "precache-manifest.360906544b4f54b81d65d8416cbb53b5.js": "/big-giant-wall/precache-manifest.360906544b4f54b81d65d8416cbb53b5.js",
+    "service-worker.js": "/big-giant-wall/service-worker.js",
+    "static/css/main.297270fe.chunk.css.map": "/big-giant-wall/static/css/main.297270fe.chunk.css.map"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.7e6cce03.js",
+    "static/js/2.12e73053.chunk.js",
+    "static/css/main.297270fe.chunk.css",
+    "static/js/main.739f2f94.chunk.js"
+  ]
+}
