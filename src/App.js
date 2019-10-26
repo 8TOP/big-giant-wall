@@ -3,50 +3,65 @@ import "./App.css";
 import Header from "./components/Header/header"
 import Frame from "./components/Frame/frame";
 import WallMenu from "./components/WallMenu/wallmenu";
-import { content } from './content';
-
-const startLoc = {
-  x: 500,
-  y: 500,
-  a: 0,
-  b: 0
-}
+//import { content } from './content';
 
 class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      content: content,
+      content: [],
+      localContent: [],
       location: {
         zone: {
           x: "0",
           y: "0"
         },
         coords: {
-          x: 0,
-          y: 0
+          x: 500,
+          y: 500
         }
       },
       mode: "explore"
     };
   }
+  componentDidMount() {
+    fetch('http://localhost:3000/')
+      .then(response => response.json())
+      .then(console.log);
+    this.loadContent();
+  }
+  loadContent() {
+    const { zone } = this.state.location;
+    fetch(`http://localhost:3000/zoneX/${zone.x}/zoneY/${zone.y}`, {
+      method: 'get',
+      headers: { 'Content-Type': 'application/json'}
+    })
+      .then(response => response.json())
+      .then(loadedContent => {
+        // let stagedContent = [];
+        // for (let item of loadedContent) {
+        //   stagedContent.push(item);
+        // }
+        this.setState({ content: loadedContent });
+    })
+  }
   addScrawl = (scrawl) => {
-    content.push(scrawl);
-    this.setState({ content: content })
-    console.log(this.state.content);
+    let tempArr = this.state.localContent;
+    tempArr.push(scrawl);
+    this.setState({ localContent: tempArr })
   }
-  saveScrawl = (i, value) => {
-    for (let c of content) {
-      if (c.id === i) {
-        c.phase = "set";
-        c.value = value;
-        break;
-      }
-    }
-    console.log("content", content);
-    this.setState({ content: content });
-    console.log("state content", this.state.content);
-  }
+  // saveScrawl = (i, value) => {
+  //   for (let c of content) {
+  //     if (c.id === i) {
+  //       c.phase = "set";
+  //       c.value = value;
+  //       break;
+  //     }
+  //   }
+  //   console.log("content", content);
+  //   this.setState({ content: content });
+  //   console.log("state content", this.state.content);
+  // }
   setMode = (mode) => {
     console.log(mode);
     this.setState({ mode: mode });
@@ -56,6 +71,9 @@ class App extends React.Component {
       zone: zone,
       coords: coords
     };
+    // if (zone !== this.state.location.zone) {
+    //   this.loadContent();
+    // }
     this.setState({ location: newLoc });
   }
   //
@@ -70,12 +88,14 @@ class App extends React.Component {
         />
         <Frame
           content={this.state.content}
+          localContent={this.state.localContent}
           location={this.state.location}
           mode={this.state.mode}
           setMode={this.setMode}
           addScrawl={this.addScrawl}
           saveScrawl={this.saveScrawl}
           transit={this.transit.bind(this)}
+          loadContent={this.loadContent.bind(this)}
         />
       </div>
     );

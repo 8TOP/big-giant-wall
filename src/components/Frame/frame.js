@@ -1,5 +1,6 @@
 import React from 'react';
 import ScrawlText from '../Scrawls/scrawltext';
+import Cell from '../Scrawls/cell';
 import './frame.css';
 
 const rune = "0123456789abcdefghijklmnopqrstuvwxyz".split("");
@@ -53,29 +54,25 @@ class Frame extends React.Component {
     constructor(props) {
         super(props);
         //
-    }
-    modeAction = (e) => {
-        switch (this.props.mode) {
-            case "draw":
-                this.makeScrawl(e);
-                break;
-            case "explore":
-                this.pullWall(e);
-                break;
-            default:
-                break;
+        this.focal = {
+            x: Math.ceil(window.innerWidth / 2),
+            y: Math.ceil(window.innerHeight / 2)
         }
     }
     makeScrawl = (e) => {
         if (this.props.mode === "draw") {
             console.log("making new scrawl");
+            const click = {
+                x: e.clientX,
+                y: e.clientY
+            }
             const newScrawl = {
-                id: this.props.content.length+1,
+                id: this.props.localContent.length+1,
                 type: "text",
-                phase: "new",
+                date: "",
                 value: "",
                 coords: {
-                    x: e.clientX,
+                    x: e.clientX,// - this.props.location.coords.x
                     y: e.clientY
                 },
                 zone: {
@@ -91,45 +88,73 @@ class Frame extends React.Component {
     pullWall = (e) => {
         let { location, transit } = this.props;
         if (e.buttons === 1 && this.props.mode === "explore") {
-            location.coords.x += e.movementX;
-            location.coords.y += e.movementY;
+            location.coords.x -= e.movementX;
+            location.coords.y -= e.movementY;
+            console.log(location.coords);
             if (location.coords.x > 1000) {
                 location.coords.x -= 1000;
-                location.zone.x = zoneEnumerator(location.zone.x, -1);
+                location.zone.x = zoneEnumerator(location.zone.x, 1);
+                this.props.loadContent();
             } else if (location.coords.x < 0) {
                 location.coords.x += 1000;
-                location.zone.x = zoneEnumerator(location.zone.x, 1);
+                location.zone.x = zoneEnumerator(location.zone.x, -1);
+                this.props.loadContent();
             }
             if (location.coords.y > 1000) {
                 location.coords.y -= 1000;
-                location.zone.y = zoneEnumerator(location.zone.y, -1);
+                location.zone.y = zoneEnumerator(location.zone.y, 1);
+                this.props.loadContent();
             } else if (location.coords.y < 0) {
                 location.coords.y += 1000;
-                location.zone.y = zoneEnumerator(location.zone.y, 1);
+                location.zone.y = zoneEnumerator(location.zone.y, -1);
+                this.props.loadContent();
             }
             transit(location.zone, location.coords);
         }
     }
     render() {
-        const { content, location } = this.props;
+        const { content, localContent, location } = this.props;
+        const allContent = content.concat(localContent);
+        const zoneDif = (c, contentZone) => {
+            const contentZoneSign = (contentZone[c].charAt(0) === "-" ? -1 : 1)
+            const reticleZoneSign = (location.zone[c].charAt(0) === "-" ? -1 : 1);
+            const contentZoneIndex = rune.indexOf(contentZone[c].charAt(contentZone[c].length - 1));
+            const reticleZoneIndex = rune.indexOf(location.zone[c].charAt(location.zone[c].length - 1));
+            let result = (contentZoneSign * contentZoneIndex) - (reticleZoneSign * reticleZoneIndex);
+            return (Math.abs(result) === 35 ? 1 * contentZoneSign * reticleZoneSign : result);
+        }
         return (
             <div
                 className="wall-frame"
                 onMouseMove={this.pullWall.bind(this)}
                 onClick={this.makeScrawl.bind(this)}
             >
+                <div className="ret">+</div>
                 {
-                    content.map((item, i) => {
-                        switch (content[i].type) {
+                    allContent.map((item, i) => {
+                        const contentCoords = {
+                            y:  ((this.focal.y - location.coords.y) + (allContent[i].coords.y + (1000 * zoneDif("y", allContent[i].zone)))),
+                            x: ((this.focal.x - location.coords.x) + (allContent[i].coords.x + (1000 * zoneDif("x", allContent[i].zone))))
+                        }
+                        switch (allContent[i].type) {
                             case "text":
                                 return (
-                                    <ScrawlText 
-                                        key={content[i].id}
-                                        content={content[i]}
-                                        contentZone={content[i].zone}
-                                        contentCoords={content[i].coords}
+                                    <ScrawlText
+                                        key={allContent[i].id}
+                                        content={allContent[i]}
+                                        contentZone={allContent[i].zone}
+                                        contentCoords={contentCoords}
                                         location={location}
                                         saveScrawl={this.props.saveScrawl}
+                                    />
+                                )
+                            case "cell":
+                                return (
+                                    <Cell
+                                        key={allContent[i].id}
+                                        contentZone={allContent[i].zone}
+                                        contentCoords={contentCoords}
+                                        location={location}
                                     />
                                 )
                             default:

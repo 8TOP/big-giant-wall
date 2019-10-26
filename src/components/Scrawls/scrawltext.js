@@ -14,19 +14,14 @@ class ScrawlText extends React.Component {
         this.setState({ textValue: e.target.value });
     }
     render() {
-        const { contentZone, contentCoords } = this.props;
-        const { zone, coords } = this.props.location;
-        const coef = (c) => {
-            let sign = (zone[c].charAt(0) === "-" ? -1 : 1);
-            return sign * (rune.indexOf(contentZone[c].charAt(contentZone[c].length - 1)) - rune.indexOf(zone[c].charAt(zone[c].length - 1)));
-        }
-        switch (this.props.content.phase) {
-            case "new":
+        const { content, contentCoords } = this.props;
+        switch (this.props.content.date) {
+            case "":
                 return (
                     <div className="scrawl-item"
                         style={{
-                            top: (contentCoords.y + coords.y + (1000 * coef("y"))),
-                            left: (contentCoords.x + coords.x + (1000 * coef("x")))
+                            top:  contentCoords.y,
+                            left: contentCoords.x
                         }}
                     >
                         <input
@@ -42,19 +37,18 @@ class ScrawlText extends React.Component {
                         />
                     </div>
                 );
-            case "set":
+            default:
                 return (
                     <div className="scrawl-item"
                         style={{
-                            top: (contentCoords.y + coords.y + (1000 * coef("y"))),
-                            left: (contentCoords.x + coords.x + (1000 * coef("x")))
+                            top:  (contentCoords.y),
+                            left: (contentCoords.x)
                         }}
                     >
-                        {this.props.content.value}
+                        {`${this.props.content.value} | x:${content.coords.x}, y:${content.coords.y}`}<br />
+                        {`zoneDif: ${this.props.content.test}`}
                     </div>
                 );
-            default:
-                break;
         }
     }
 }
