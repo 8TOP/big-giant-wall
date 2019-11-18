@@ -1,39 +1,4 @@
-import React from "react";
-import "./App.css";
-import Header from "./components/Header/header"
-import Frame from "./components/Frame/frame";
-import Options from './components/Options/options';
-
-const initialState = {
-  content: []
-};
-
-class App extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = initialState;
-    
-    this.masonry = {
-      size: 200,
-      scope: 5,
-    }
-    this.location = {
-      zone: {
-        x: "0",
-        y: "0"
-      },
-      scroll: {
-        x: this.masonry.size / 2,
-        y: this.masonry.size / 2
-      }
-    }
-    this.scrollingDeets = {
-      x: 0,
-      y: 0
-    }
-    
-  }
-  abacus = (firstValue, secondValue) => {
+const abacus = (firstValue, secondValue) => {
     const rune = "0123456789abcdefghijklmnopqrstuvwxyz".split("");
     const unPad = (value) => {
         while (value[0] === "0" && value.length > 1) {
@@ -42,10 +7,6 @@ class App extends React.Component {
         return value;
     }
     const base = 36;
-    //
-    if (typeof firstValue === "number") {
-      firstValue = firstValue.toString();
-    }
     let init = firstValue.split("");
     let initSign = (init[0] === "-" ? init.shift() : "");
     let inc, incSign;
@@ -137,106 +98,10 @@ class App extends React.Component {
         newValue.unshift(rune[Math.abs(digit)]);
     }
     newValue = unPad(newValue.reverse());
+    console.log("abacus: ", newValue);
     return sign + newValue.join("");
-  }
-  componentDidMount() {
-    // const { zone } = this.location;
-    // fetch('http://localhost:3000/')
-    //   .then(response => response.json())
-    //   .then(console.log);
-    this.loadContent();
-  }
-  loadContent() {
-    const { zone } = this.location;
-    fetch(`http://localhost:3000/zoneX/${zone.x}/zoneY/${zone.y}`, {
-      method: 'get',
-      headers: { 'Content-Type': 'application/json' }
-    })
-      .then(response => response.json())
-      .then(loadedContent => {
-        this.adjustScroll();
-        this.setState({ content: loadedContent });
-      })
-      .catch(err => console.log(err));
-  }
-  frameElem(elem) {
-    this.elem = elem;
-  }
-  transit(zoneX, zoneY) {
-    if (!this.loadFreeze) {
-      this.location.zone = {
-        x: zoneX,
-        y: zoneY
-      }
-      this.loadFreeze = true;
-      this.loadContent();
-    }
-  }
-  adjustScroll() {
-    this.loadFreeze = false;
-    const { x, y } = this.scrollingDeets;
-    const { size } = this.masonry;
-    this.elem.scrollLeft += (size * x);
-    this.elem.scrollTop += (size * y);
-    this.scrollingDeets = {
-      x: 0,
-      y: 0
-    }
-  }
-  scrollHandler(scroll) {
-    const { size } = this.masonry;
-    const { zone } = this.location;
-    this.location.scroll = scroll;
-    if (scroll.x >= size) {
-      this.location.scroll.x -= size;
-      this.scrollingDeets = {
-        x: -1,
-        y: 0
-      };
-      this.transit(this.abacus(zone.x, 1), zone.y);
-    } else if (scroll.x < 0) {
-      this.location.scroll.x += size;
-      this.scrollingDeets = {
-        x: 1,
-        y: 0
-      }
-      this.transit(this.abacus(zone.x, -1), zone.y);
-    }
-    //
-    if (scroll.y >= size) {
-      this.location.scroll.y -= size;
-      this.scrollingDeets = {
-        x: 0,
-        y: -1
-      }
-      this.transit(zone.x, this.abacus(zone.y, 1));
-    } else if (scroll.y < 0) {
-      this.location.scroll.y += size;
-      this.scrollingDeets = {
-        x: 0,
-        y: 1
-      }
-      this.transit(zone.x, this.abacus(zone.y, -1));
-    }
-  }
-  //
-  render() {
-    return (
-      <div className="App">
-        <Options/>
-        <Header
-          location={this.location.zone}
-        />
-        <Frame
-          content={this.state.content}
-          location={this.location}
-          masonry={this.masonry}
-          scrollHandler={this.scrollHandler.bind(this)}
-          frameElem={this.frameElem.bind(this)}
-        />
-      </div>
-    );
-  }
 }
 
-export default App;
+module.exports = {
+    abacus: abacus
+}

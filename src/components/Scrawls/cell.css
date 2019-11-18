@@ -1,8 +1,0 @@
-.wall-cell {
-    position: absolute;
-    width: 1000px;
-    height: 1000px;
-    border-top: 1px solid lightgray;
-    border-left: 1px solid lightgray;
-    box-sizing: border-box;
-}

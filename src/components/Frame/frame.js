@@ -1,169 +1,205 @@
 import React from 'react';
-import ScrawlText from '../Scrawls/scrawltext';
-import Cell from '../Scrawls/cell';
+import Brick from '../Brick/brick';
 import './frame.css';
-
-const rune = "0123456789abcdefghijklmnopqrstuvwxyz".split("");
-
-const zoneEnumerator = (value, dir) => {
-    let str = value.split("");
-    let sign = "";
-    if (str[0] === "-") {
-        str.shift();
-        sign = "-";
-        dir = -dir;
-    }
-    if (dir === 1) {
-        for (let n = str.length-1; n >= -1; n--){
-            if (n < 0) {
-                str.unshift("1");
-                break;
-            }else if (str[n] !== "z") {
-                str[n] = rune[rune.indexOf(str[n]) + 1];
-                break;
-            } else {
-                str[n] = "0";
-            }
-        }
-    } else if (dir === -1) {
-        for (let n = str.length-1; n >= -1; n--){
-            if (n < 0) {
-                str.shift();
-                break;
-            }else if (str[n] !== "0") {
-                str[n] = rune[rune.indexOf(str[n]) - 1];
-                if (str.length === 1 && str[n] === "0") {
-                    sign = "";
-                }
-                break;
-            } else {
-                if (str.length === 1) {
-                    sign = "-";
-                    str[0] = "1";
-                    break;
-                } else {
-                    str[n] = "z";
-                }
-            }
-        }
-    }
-    return sign + str.join("");
-}
 
 class Frame extends React.Component {
     constructor(props) {
         super(props);
         //
-        this.focal = {
-            x: Math.ceil(window.innerWidth / 2),
-            y: Math.ceil(window.innerHeight / 2)
-        }
     }
-    makeScrawl = (e) => {
-        if (this.props.mode === "draw") {
-            console.log("making new scrawl");
-            const click = {
-                x: e.clientX,
-                y: e.clientY
+    abacus = (firstValue, secondValue) => {
+        const rune = "0123456789abcdefghijklmnopqrstuvwxyz".split("");
+        const unPad = (value) => {
+            while (value[0] === "0" && value.length > 1) {
+                value.shift();
             }
-            const newScrawl = {
-                id: this.props.localContent.length+1,
-                type: "text",
-                date: "",
-                value: "",
-                coords: {
-                    x: e.clientX,// - this.props.location.coords.x
-                    y: e.clientY
-                },
-                zone: {
-                    x: this.props.location.zone.x,
-                    y: this.props.location.zone.y
+            return value;
+        }
+        const base = 36;
+        //
+        if (typeof firstValue === "number") {
+            firstValue = firstValue.toString();
+          }
+        let init = firstValue.split("");
+        let initSign = (init[0] === "-" ? init.shift() : "");
+        let inc, incSign;
+        if (typeof secondValue === "number") {
+            inc = secondValue.toString(base).split("");
+            incSign = (secondValue >= 0 ? "" : inc.shift());
+        } else if (typeof secondValue === "string") {
+            inc = secondValue.split("");
+            incSign = (inc[0] === "-" ? inc.shift() : "");
+        }
+        let newValue = [];
+    
+        init.reverse();
+        inc.reverse();
+    
+        let longerValue;
+        let shorterValue;
+        let longerSign;
+        let biggerValue = [];
+        let smallerValue = [];
+        if (init.length > inc.length) {
+            longerValue = biggerValue = init;
+            shorterValue = smallerValue = inc;
+            longerSign = initSign;
+        } else if (init.length < inc.length) {
+            longerValue = biggerValue = inc;
+            shorterValue = smallerValue = init;
+            longerSign = incSign;
+        } else {
+            longerValue = init;
+            shorterValue = inc;
+            longerSign = initSign;
+        }
+        let digit = 0;
+        let sign = "";
+        for (let l = longerValue.length - 1; l >= 0; l--) {
+            if (l > shorterValue.length - 1) {
+                digit = rune.indexOf(longerValue[l]);
+                sign = longerSign;
+            } else {
+                if (initSign === incSign) {
+                    digit = rune.indexOf(init[l]) + rune.indexOf(inc[l]);
+                    if (digit >= base) {
+                        digit -= base;
+                        for (let x = 0; x <= newValue.length; x++) {
+                            if (x === newValue.length) {
+                                newValue.push("1");
+                                break;
+                            }
+                            if (newValue[x] === rune[base - 1]) {
+                                newValue[x] = "0";
+                            } else {
+                                newValue[x] = rune[rune.indexOf(newValue[x]) + 1];
+                                break;
+                            }
+                        }
+                    }
+                    sign = initSign;
+                } else {
+                    if (biggerValue.length === 0) {
+                        if (rune.indexOf(init[l]) > rune.indexOf(inc[l])) {
+                            biggerValue = init;
+                            smallerValue = inc;
+                            sign = initSign;
+                        } else if (rune.indexOf(init[l]) < rune.indexOf(inc[l])) {
+                            biggerValue = inc;
+                            smallerValue = init;
+                            sign = incSign;
+                        }
+                    }
+                    if (biggerValue.length > 0) {
+                        digit = rune.indexOf(biggerValue[l]) - rune.indexOf(smallerValue[l]);
+                        if (digit < 0) {
+                            digit += base;
+                            for (let x = 0; x < newValue.length; x++) {
+                                if (newValue[x] === "0") {
+                                    newValue[x] = rune[base - 1];
+                                } else {
+                                    newValue[x] = rune[rune.indexOf(newValue[x]) - 1];
+                                    break;
+                                }
+                            }
+                        }
+                    } else {
+                        digit = "";
+                    }
                 }
-            };
-            console.log(newScrawl);
-            this.props.addScrawl(newScrawl);
-            this.props.setMode("explore");
+            }
+            newValue.unshift(rune[Math.abs(digit)]);
         }
+        newValue = unPad(newValue.reverse());
+        //console.log("abacus: ", newValue);
+        return sign + newValue.join("");
     }
-    pullWall = (e) => {
-        let { location, transit } = this.props;
-        if (e.buttons === 1 && this.props.mode === "explore") {
-            location.coords.x -= e.movementX;
-            location.coords.y -= e.movementY;
-            console.log(location.coords);
-            if (location.coords.x > 1000) {
-                location.coords.x -= 1000;
-                location.zone.x = zoneEnumerator(location.zone.x, 1);
-                this.props.loadContent();
-            } else if (location.coords.x < 0) {
-                location.coords.x += 1000;
-                location.zone.x = zoneEnumerator(location.zone.x, -1);
-                this.props.loadContent();
-            }
-            if (location.coords.y > 1000) {
-                location.coords.y -= 1000;
-                location.zone.y = zoneEnumerator(location.zone.y, 1);
-                this.props.loadContent();
-            } else if (location.coords.y < 0) {
-                location.coords.y += 1000;
-                location.zone.y = zoneEnumerator(location.zone.y, -1);
-                this.props.loadContent();
-            }
-            transit(location.zone, location.coords);
-        }
+    
+    wallCrawl = (e) => {
+        const { scroll } = this.props.location;
+        let littleScroll = {
+            x: scroll.x + e.deltaX,
+            y: scroll.y + e.deltaY
+        };
+        this.props.scrollHandler(littleScroll);
+    }
+    componentDidMount() {
+        this.elem = document.getElementById("wallFrame");
+        this.props.frameElem(this.elem);
+        this.setScroll();
+    }
+    setScroll() {
+        const { size, scope } = this.props.masonry;
+        this.elem.scrollLeft = (size * scope) - (window.innerWidth / 2) + this.props.location.scroll.x;
+        this.elem.scrollTop = (size * scope) - (window.innerHeight / 2) + this.props.location.scroll.y;
     }
     render() {
-        const { content, localContent, location } = this.props;
-        const allContent = content.concat(localContent);
-        const zoneDif = (c, contentZone) => {
-            const contentZoneSign = (contentZone[c].charAt(0) === "-" ? -1 : 1)
-            const reticleZoneSign = (location.zone[c].charAt(0) === "-" ? -1 : 1);
-            const contentZoneIndex = rune.indexOf(contentZone[c].charAt(contentZone[c].length - 1));
-            const reticleZoneIndex = rune.indexOf(location.zone[c].charAt(location.zone[c].length - 1));
-            let result = (contentZoneSign * contentZoneIndex) - (reticleZoneSign * reticleZoneIndex);
-            return (Math.abs(result) === 35 ? 1 * contentZoneSign * reticleZoneSign : result);
+        const { size, scope } = this.props.masonry;
+        const { zone } = this.props.location;
+        const setSize = ((scope * 2) + 1) * size;
+        const { content } = this.props;
+        let grid = [];
+        for (let x = -scope; x <= scope; x++){
+            grid.push([]);
+            for (let y = -scope; y <= scope; y++){
+                grid[x + scope].push([this.abacus(zone.x, x), this.abacus(zone.y, y)]);
+            }
         }
-        return (
-            <div
-                className="wall-frame"
-                onMouseMove={this.pullWall.bind(this)}
-                onClick={this.makeScrawl.bind(this)}
-            >
-                <div className="ret">+</div>
-                {
-                    allContent.map((item, i) => {
-                        const contentCoords = {
-                            y:  ((this.focal.y - location.coords.y) + (allContent[i].coords.y + (1000 * zoneDif("y", allContent[i].zone)))),
-                            x: ((this.focal.x - location.coords.x) + (allContent[i].coords.x + (1000 * zoneDif("x", allContent[i].zone))))
-                        }
-                        switch (allContent[i].type) {
-                            case "text":
+        if (content.length > 0) {
+            //this.setScroll();
+            return (
+                <div
+                    id="wallFrame"
+                    className="wall-frame"
+                    onWheel={(e) => this.wallCrawl(e)}
+                >
+                    
+                    <div
+                        id="brickSet"
+                        className="brick-set"
+                        style={{
+                            width: (setSize),
+                            height: (setSize)
+                        }}
+                    >
+                        {
+                            grid.map((column, x) => {
                                 return (
-                                    <ScrawlText
-                                        key={allContent[i].id}
-                                        content={allContent[i]}
-                                        contentZone={allContent[i].zone}
-                                        contentCoords={contentCoords}
-                                        location={location}
-                                        saveScrawl={this.props.saveScrawl}
-                                    />
+                                    column.map((brick, y) => {
+                                        return (
+                                            <Brick
+                                                key={(x * ((scope * 2) + 1)) + (y)}
+                                                zone={grid[x][y]}
+                                                contents={content[x][y]}
+                                                size={size}
+                                            />
+                                        )
+                                    })
                                 )
-                            case "cell":
-                                return (
-                                    <Cell
-                                        key={allContent[i].id}
-                                        contentZone={allContent[i].zone}
-                                        contentCoords={contentCoords}
-                                        location={location}
-                                    />
-                                )
-                            default:
-                                break;
+                            })
                         }
-                    })
-                }
-            </div>
-        )
+                    </div>
+                </div>
+            )
+        } else {
+            return (
+                <div
+                    id="wallFrame"
+                    className="wall-frame"
+                    onWheel={(e) => this.wallCrawl(e)}
+                >
+                    <div
+                        id="brickSet"
+                        className="brick-set"
+                        style={{
+                            width: (setSize),
+                            height: (setSize)
+                        }}
+                    >
+                    </div>
+                </div>
+            )
+        }
     }
 }
 
