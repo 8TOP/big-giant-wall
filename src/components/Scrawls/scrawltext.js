@@ -32,7 +32,7 @@ class ScrawlText extends React.Component {
     }
     saveScrawl = () => {
         const { content } = this.props;
-        fetch('http://localhost:3000/create', {
+        fetch('https://big-giant-wall-backend.herokuapp.com/create', {
             method: 'post',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
