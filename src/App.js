@@ -8,6 +8,8 @@ const initialState = {
   content: []
 };
 
+const backendUrl = (process.env.BEURL ? process.env.BEURL: "http://localhost:3000");
+
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -150,7 +152,7 @@ class App extends React.Component {
   loadContent() {
     this.loadFreeze = true;
     const { zone } = this.location;
-    fetch(`http://localhost:3000/zoneX/${zone.x}/zoneY/${zone.y}`, {
+    fetch(`${backendUrl}/zoneX/${zone.x}/zoneY/${zone.y}`, {
       method: 'get',
       headers: { 'Content-Type': 'application/json' }
     })
