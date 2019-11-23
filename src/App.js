@@ -8,9 +8,9 @@ const initialState = {
   content: []
 };
 
-//const backendUrl = (process.env.BEURL ? process.env.BEURL: "http://localhost:3000");
-const backendUrl = "https://big-giant-wall-backend.herokuapp.com";
-
+const backendUrl = (process.env.BEURL ? process.env.BEURL: "http://localhost:3000");
+// const backendUrl = "https://big-giant-wall-backend.herokuapp.com";
+console.log(backendUrl);
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -18,8 +18,8 @@ class App extends React.Component {
     this.clickMode = "";
     this.localContent = [];
     this.masonry = {
-      size: 200,
-      scope: 5
+      size: 1000,
+      scope: 3
     }
     this.location = {
       zone: {
