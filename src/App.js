@@ -12,10 +12,11 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = initialState;
-    
+    this.clickMode = "";
+    this.localContent = [];
     this.masonry = {
       size: 200,
-      scope: 5,
+      scope: 5
     }
     this.location = {
       zone: {
@@ -147,6 +148,7 @@ class App extends React.Component {
     this.loadContent();
   }
   loadContent() {
+    this.loadFreeze = true;
     const { zone } = this.location;
     fetch(`http://localhost:3000/zoneX/${zone.x}/zoneY/${zone.y}`, {
       method: 'get',
@@ -154,6 +156,10 @@ class App extends React.Component {
     })
       .then(response => response.json())
       .then(loadedContent => {
+        if (this.localContent.length > 0) {
+          const { position } = this.localContent[0];
+          loadedContent[position.x][position.y].push(this.localContent[0]);
+        }
         this.adjustScroll();
         this.setState({ content: loadedContent });
       })
@@ -163,12 +169,11 @@ class App extends React.Component {
     this.elem = elem;
   }
   transit(zoneX, zoneY) {
+    this.location.zone = {
+      x: zoneX,
+      y: zoneY
+    }
     if (!this.loadFreeze) {
-      this.location.zone = {
-        x: zoneX,
-        y: zoneY
-      }
-      this.loadFreeze = true;
       this.loadContent();
     }
   }
@@ -219,11 +224,48 @@ class App extends React.Component {
       this.transit(zone.x, this.abacus(zone.y, -1));
     }
   }
+  menuAction = (action) => {
+    this.clickMode = action;
+    console.log("clickMode set to " + this.clickMode);
+  }
+  brickClick = (zone, e) => {
+    switch (this.clickMode) {
+      case "write":
+        const newScrawl = {
+          id: "new",
+          type: "text",
+          date: "",
+          value: "",
+          coords: {
+              x: e.layerX,
+              y: e.layerY
+          },
+          zone: {
+              x: zone[0],
+              y: zone[1]
+          },
+          position: {
+            x: e.target.parentNode.attributes[2].nodeValue,
+            y: e.target.parentNode.attributes[3].nodeValue
+          }
+        };
+        this.localContent[0] = newScrawl;
+        this.loadContent();
+        break;
+      case "explore":
+        break;
+      default:
+        break;
+    }
+    this.clickMode = "";
+  }
   //
   render() {
     return (
       <div className="App">
-        <Options/>
+        <Options
+          action={this.menuAction}
+        />
         <Header
           location={this.location.zone}
         />
@@ -233,6 +275,7 @@ class App extends React.Component {
           masonry={this.masonry}
           scrollHandler={this.scrollHandler.bind(this)}
           frameElem={this.frameElem.bind(this)}
+          brickClick={this.brickClick.bind(this)}
         />
       </div>
     );

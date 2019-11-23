@@ -5,7 +5,6 @@ import './brick.css';
 class Brick extends React.Component {
     constructor(props) {
         super(props);
-        this.local = [];
     }
     
     makeScrawl = (e) => {
@@ -34,27 +33,26 @@ class Brick extends React.Component {
     }
     componentDidMount() {
         const { zone } = this.props;
-        this.elem = document.getElementById(`x+${zone[0]}_y+${zone[1]}`);
+        this.elem = document.getElementById(`x${zone[0]}_y${zone[1]}`);
     }
     render() {
-        const { contents, size, zone } = this.props;
+        const { contents, size, zone, position } = this.props;
         if (contents) {
-            const allContent = contents.concat(this.local);
             return (
                 <div
-                    id={`x+${zone[0]}_y+${zone[1]}`}
+                    id={`x${zone[0]}_y${zone[1]}`}
                     className="brick"
                     style={{
                         width: size,
                         height: size
                     }}
+                    x={position.x}
+                    y={position.y}
+                    onClick={(e) => this.props.brickClick(zone, e.nativeEvent)}
                 >{`${zone[0]}, ${zone[1]}`}
-                    <div className="wall-over-layer">
-
-                    </div>
                     <div className="wall-main-layer">
                         {
-                            allContent.map((scrawl, i) => {
+                            contents.map((scrawl, i) => {
                                 // console.log("mapping", scrawl);
                                 switch (scrawl.type) { 
                                     case "text":

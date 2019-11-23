@@ -29,6 +29,10 @@ class Options extends React.Component {
             this.setState({ visibility: "hidden" })
         }
     }
+    optionSelected = (action) => {
+        this.props.action(action);
+        this.showOptions(false);
+    }
     render() {
         
         return (
@@ -45,13 +49,13 @@ class Options extends React.Component {
                         type="button"
                         value="Write"
                         className="mode-menu-item"
-                        onClick={() => this.props.action("write")}
+                        onClick={() => this.optionSelected("write")}
                     />
                     <input
                         type="button"
                         value="Explore"
                         className="mode-menu-item"
-                        onClick={() => this.props.action("explore")}
+                        onClick={() => this.optionSelected("explore")}
                     />
                 </div>
                 <div

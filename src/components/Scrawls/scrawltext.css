@@ -1,5 +1,6 @@
 .scrawl-item {
     position: absolute;
+    z-index: 100;
 }
 
 .scrawl-text-new {

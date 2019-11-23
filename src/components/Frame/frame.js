@@ -165,13 +165,19 @@ class Frame extends React.Component {
                         {
                             grid.map((column, x) => {
                                 return (
-                                    column.map((brick, y) => {
+                                    column.map((row, y) => {
+                                        const position = {
+                                            x: x,
+                                            y: y
+                                        }
                                         return (
                                             <Brick
                                                 key={(x * ((scope * 2) + 1)) + (y)}
                                                 zone={grid[x][y]}
                                                 contents={content[x][y]}
                                                 size={size}
+                                                brickClick={this.props.brickClick}
+                                                position={position}
                                             />
                                         )
                                     })

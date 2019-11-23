@@ -59,7 +59,10 @@ class ScrawlText extends React.Component {
                 return (
                     <div
                         className="scrawl-item"
-                        
+                        style={{
+                            top: coords.y,
+                            left: coords.x
+                        }}
                     >
                         <input
                             type="text"
