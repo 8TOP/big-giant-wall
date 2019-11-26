@@ -1,4 +1,5 @@
 import React from 'react';
+import ScrawlText from '../Scrawls/scrawltext';
 import Brick from '../Brick/brick';
 import './frame.css';
 
@@ -114,15 +115,6 @@ class Frame extends React.Component {
         //console.log("abacus: ", newValue);
         return sign + newValue.join("");
     }
-    
-    wallCrawl = (e) => {
-        const { scroll } = this.props.location;
-        let littleScroll = {
-            x: scroll.x + e.deltaX,
-            y: scroll.y + e.deltaY
-        };
-        this.props.scrollHandler(littleScroll);
-    }
     componentDidMount() {
         this.elem = document.getElementById("wallFrame");
         this.props.frameElem(this.elem);
@@ -133,26 +125,72 @@ class Frame extends React.Component {
         this.elem.scrollLeft = (size * scope) - (window.innerWidth / 2) + this.props.location.scroll.x;
         this.elem.scrollTop = (size * scope) - (window.innerHeight / 2) + this.props.location.scroll.y;
     }
+    wallCrawl = (e) => {
+        const { scroll } = this.props.location;
+        let littleScroll = {
+            x: scroll.x + e.deltaX,
+            y: scroll.y + e.deltaY
+        };
+        this.props.scrollHandler(littleScroll);
+    }
     render() {
         const { size, scope } = this.props.masonry;
         const { zone } = this.props.location;
         const setSize = ((scope * 2) + 1) * size;
-        const { content } = this.props;
+        const { content, backendUrl } = this.props;
         let grid = [];
         for (let x = -scope; x <= scope; x++){
             grid.push([]);
             for (let y = -scope; y <= scope; y++){
-                grid[x + scope].push([this.abacus(zone.x, x), this.abacus(zone.y, y)]);
+                grid[x + scope].push({
+                    x: this.abacus(zone.x, x),
+                    y: this.abacus(zone.y, y)
+                });
             }
         }
         if (content.length > 0) {
-            //this.setScroll();
             return (
                 <div
                     id="wallFrame"
                     className="wall-frame"
                     onWheel={(e) => this.wallCrawl(e)}
                 >
+                    <div
+                        id="surface"
+                        className="surface"
+                        style={{
+                            width: (setSize),
+                            height: (setSize)
+                        }}
+                    >
+                        {
+                            content.map((set, x) => {
+                                return (
+                                    set.map((scrawls, y) => {
+                                        return (
+                                            scrawls.map(scrawl => {
+                                                switch (scrawl.type) { 
+                                                    case "text":
+                                                        return (
+                                                            <ScrawlText
+                                                                key={scrawl.id}
+                                                                content={scrawl}
+                                                                size={size}
+                                                                position={{x: x, y: y}}
+                                                                backendUrl={backendUrl}
+                                                                clearLocal={this.props.clearLocal}
+                                                            />
+                                                        )
+                                                    default:
+                                                        return null;
+                                                }
+                                            })
+                                        )
+                                    })
+                                )
+                            })
+                        }
+                    </div>
                     
                     <div
                         id="brickSet"
@@ -178,6 +216,7 @@ class Frame extends React.Component {
                                                 size={size}
                                                 brickClick={this.props.brickClick}
                                                 position={position}
+                                                backendUrl={this.props.backendUrl}
                                             />
                                         )
                                     })

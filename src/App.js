@@ -9,8 +9,8 @@ const initialState = {
 };
 
 // const backendUrl = "http://localhost:3000";
-const backendUrl = "https://big-giant-wall-backend.herokuapp.com";
-// const backendURL = process.env.BEURL;
+// const backendUrl = "https://big-giant-wall-backend.herokuapp.com";
+const backendUrl = process.env.BEURL;
 console.log(backendUrl);
 class App extends React.Component {
   constructor(props) {
@@ -36,7 +36,6 @@ class App extends React.Component {
       x: 0,
       y: 0
     }
-    
   }
   abacus = (firstValue, secondValue) => {
     const rune = "0123456789abcdefghijklmnopqrstuvwxyz".split("");
@@ -144,6 +143,51 @@ class App extends React.Component {
     newValue = unPad(newValue.reverse());
     return sign + newValue.join("");
   }
+  adjustScroll() {
+    this.loadFreeze = false;
+    const { x, y } = this.scrollingDeets;
+    const { size } = this.masonry;
+    this.elem.scrollLeft += (size * x);
+    this.elem.scrollTop += (size * y);
+    this.scrollingDeets = {
+      x: 0,
+      y: 0
+    }
+  }
+  brickClick = (zone, e) => {
+    switch (this.clickMode) {
+      case "write":
+        const newScrawl = {
+          id: "new",
+          type: "text",
+          date: "",
+          value: "",
+          coords: {
+              x: e.layerX,
+              y: e.layerY
+          },
+          zone: {
+              x: zone.x,
+              y: zone.y
+          },
+          position: {
+            x: e.target.parentNode.attributes[2].nodeValue,
+            y: e.target.parentNode.attributes[3].nodeValue
+          }
+        };
+        this.localContent[0] = newScrawl;
+        this.loadContent();
+        break;
+      case "explore":
+        break;
+      default:
+        break;
+    }
+    this.clickMode = "";
+  }
+  clearLocal() {
+    this.localContent = [];
+  }
   componentDidMount() {
     // const { zone } = this.location;
     // fetch('http://localhost:3000/')
@@ -151,9 +195,13 @@ class App extends React.Component {
     //   .then(console.log);
     this.loadContent();
   }
+  frameElem(elem) {
+    this.elem = elem;
+  }
   loadContent() {
     this.loadFreeze = true;
     const { zone } = this.location;
+    console.log(`${backendUrl}/zoneX/${zone.x}/zoneY/${zone.y}`)
     fetch(`${backendUrl}/zoneX/${zone.x}/zoneY/${zone.y}`, {
       method: 'get',
       headers: { 'Content-Type': 'application/json' }
@@ -169,28 +217,9 @@ class App extends React.Component {
       })
       .catch(err => console.log(err));
   }
-  frameElem(elem) {
-    this.elem = elem;
-  }
-  transit(zoneX, zoneY) {
-    this.location.zone = {
-      x: zoneX,
-      y: zoneY
-    }
-    if (!this.loadFreeze) {
-      this.loadContent();
-    }
-  }
-  adjustScroll() {
-    this.loadFreeze = false;
-    const { x, y } = this.scrollingDeets;
-    const { size } = this.masonry;
-    this.elem.scrollLeft += (size * x);
-    this.elem.scrollTop += (size * y);
-    this.scrollingDeets = {
-      x: 0,
-      y: 0
-    }
+  menuAction = (action) => {
+    this.clickMode = action;
+    console.log("clickMode set to " + this.clickMode);
   }
   scrollHandler(scroll) {
     const { size } = this.masonry;
@@ -228,40 +257,14 @@ class App extends React.Component {
       this.transit(zone.x, this.abacus(zone.y, -1));
     }
   }
-  menuAction = (action) => {
-    this.clickMode = action;
-    console.log("clickMode set to " + this.clickMode);
-  }
-  brickClick = (zone, e) => {
-    switch (this.clickMode) {
-      case "write":
-        const newScrawl = {
-          id: "new",
-          type: "text",
-          date: "",
-          value: "",
-          coords: {
-              x: e.layerX,
-              y: e.layerY
-          },
-          zone: {
-              x: zone[0],
-              y: zone[1]
-          },
-          position: {
-            x: e.target.parentNode.attributes[2].nodeValue,
-            y: e.target.parentNode.attributes[3].nodeValue
-          }
-        };
-        this.localContent[0] = newScrawl;
-        this.loadContent();
-        break;
-      case "explore":
-        break;
-      default:
-        break;
+  transit(zoneX, zoneY) {
+    this.location.zone = {
+      x: zoneX,
+      y: zoneY
     }
-    this.clickMode = "";
+    if (!this.loadFreeze) {
+      this.loadContent();
+    }
   }
   //
   render() {
@@ -280,6 +283,8 @@ class App extends React.Component {
           scrollHandler={this.scrollHandler.bind(this)}
           frameElem={this.frameElem.bind(this)}
           brickClick={this.brickClick.bind(this)}
+          backendUrl={backendUrl}
+          clearLocal={this.clearLocal.bind(this)}
         />
       </div>
     );
