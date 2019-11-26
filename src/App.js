@@ -10,7 +10,7 @@ const initialState = {
 
 // const backendUrl = "http://localhost:3000";
 // const backendUrl = "https://big-giant-wall-backend.herokuapp.com";
-const backendUrl = process.env.BEURL;
+const backendUrl = process.env.BE_URL;
 console.log(backendUrl);
 class App extends React.Component {
   constructor(props) {
