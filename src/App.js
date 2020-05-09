@@ -8,8 +8,8 @@ const initialState = {
   content: []
 };
 
-// const backendUrl = "http://localhost:3000";
-const backendUrl = "https://big-giant-wall-backend.herokuapp.com";
+const backendUrl = "http://localhost:3000";
+// const backendUrl = "https://big-giant-wall-backend.herokuapp.com";
 
 console.log(backendUrl);
 class App extends React.Component {
